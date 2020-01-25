@@ -23,43 +23,42 @@ def dict_factory(cursor, row):
 def initialize_db():
     '''This function initializes the Database'''
 
-    connect = sqlite3.connect('fitnessfreak.db')
+    connect = sqlite3.connect('quotes.db')
     return connect
 
 @app.route('/', methods=['GET'])
 def home():
     '''This function shows the home page of the API'''
     return '''
-    <h1>Welcome to the Awesome Fitness Kiosk API Home Page</h1>
+    <h1>Welcome to the Awesome Quotes API</h1>
     '''
 
-@app.route('/v1/resources/fruits/all', methods=['GET'])
+@app.route('/v1/quotes/all', methods=['GET'])
 def all_data():
     '''This function fetches all the data present in the database'''
     connect = initialize_db()
     connect.row_factory = dict_factory
     cursor = connect.cursor()
     data = cursor.execute('''
-    SELECT * FROM BMI,exercise, nutriplan , fooditem WHERE BMI.id=exercise.bmi_id AND BMI.id=nutriplan.b_id AND nutri_id=fooditem.n_id;
+    SELECT * FROM QUOTES;
     ''').fetchall()
 
     return jsonify(data)
                 
-@app.route('/v1/resources/nutrition/bmi', methods=['GET'])
-def filterd_data_nutrition():
+@app.route('/v1/quotes', methods=['GET'])
+def filterd_quote_data():
     '''This function fetches data based on the filter provided by the user'''
     query_parameters = request.args
 
-    id = query_parameters.get('id')
-    name = query_parameters.get('name')
+    category = query_parameters.get('category')
 
-    query = 'SELECT fooditem,additionalinfo FROM BMI, nutriplan , fooditem WHERE BMI.id=nutriplan.b_id AND nutri_id=fooditem.n_id AND'
+    query = 'SELECT quote FROM QUOTES WHERE'
     filters = []
 
-    if name:
-        query = query + ' name=? AND'
-        filters.append(name)
-    if not (name):
+    if category:
+        query = query + ' category=? AND'
+        filters.append(category)
+    if not (category):
         page_not_found()
     
     # This removes everything till the fourth last character in the 
@@ -72,35 +71,6 @@ def filterd_data_nutrition():
 
     data = cursor.execute(query, filters).fetchall()
 
-    return jsonify(data)
-
-@app.route('/v1/resources/workout/bmi', methods=['GET'])
-def filterd_data_exercise():
-    query_parameters = request.args
-
-    id = query_parameters.get('id')
-    name = query_parameters.get('name')
-    lower = query_parameters.get('lower')
-    upper = query_parameters.get('upper')
-
-    query = 'SELECT DISTINCT ex_name FROM BMI,exercise, fooditem WHERE BMI.id=exercise.bmi_id AND'
-    filters = []
-
-    if name:
-        query = query + ' name=? AND'
-        filters.append(name)
-    if not (name):
-        page_not_found()
-    
-    # This removes everything till the fourth last character in the 
-    # final query
-    query = query[:-4] + ';'
-
-    conn = initialize_db()
-    conn.row_factory = dict_factory
-    cursor = conn.cursor()
-
-    data = cursor.execute(query, filters).fetchall()
     return jsonify(data)
 
 # This function shows a error page if the API is not called correctly
