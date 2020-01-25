@@ -52,7 +52,7 @@ def filterd_quote_data():
 
     category = query_parameters.get('category')
 
-    query = 'SELECT quote FROM QUOTES WHERE'
+    query = 'SELECT * FROM QUOTES WHERE'
     filters = []
 
     if category:
